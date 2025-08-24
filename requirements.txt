@@ -1,12 +1,13 @@
-# Core
+# Core - Versiones específicas para Render
 streamlit==1.28.0
 pandas==1.5.3
 numpy==1.24.3
 
-# Google Sheets
+# Google Sheets - Versiones ligeras
 gspread==5.8.0
 google-auth==2.22.0
 oauth2client==4.1.3
+google-api-python-client==2.108.0
 
 # PDF Generation
 reportlab==3.6.13
@@ -16,7 +17,5 @@ pytz==2023.3
 tenacity==8.2.2
 streamlit-lottie==0.0.3
 
-# Evitar estas dependencias pesadas en Render Free:
-# pyarrow (demasiado pesado para compilar)
-# openpyxl (no necesario)
-# xlrd (no necesario)
+# Prevenir instalación de pyarrow
+pyarrow==0; python_version >= "3.0"
