@@ -1,10 +1,14 @@
 """
 Configuración central de la aplicación
-Versión 3.0 - Optimizado para Render y estilo CRM profesional
+Versión 3.1 - Optimizado para Render con GOOGLE_SHEETS_CREDENTIALS
 """
 
 import os
+import json
 import streamlit as st
+
+from google.oauth2.service_account import Credentials
+import gspread
 
 # --------------------------
 # DETECCIÓN DE ENTORNO (RENDER vs LOCAL)
@@ -15,10 +19,11 @@ IS_DEVELOPMENT = not IS_RENDER
 # --------------------------
 # CONFIGURACIÓN DE GOOGLE SHEETS
 # --------------------------
-# Para Render: usar variable de entorno, para desarrollo: usar secrets o valor por defecto
-SHEET_ID = os.environ.get('GOOGLE_SHEET_ID', 
-                         st.secrets.get("google_sheets", {}).get("sheet_id", 
-                         "13R_3Mdr25Jd-nGhK7CxdcbKkFWLc0LPdYrOLOY8sZJo"))
+# ID de la hoja
+SHEET_ID = os.environ.get(
+    "GOOGLE_SHEET_ID",
+    "13R_3Mdr25Jd-nGhK7CxdcbKkFWLc0LPdYrOLOY8sZJo"  # valor por defecto en desarrollo
+)
 
 WORKSHEET_RECLAMOS = "Reclamos"
 WORKSHEET_CLIENTES = "Clientes"
@@ -27,7 +32,34 @@ WORKSHEET_NOTIFICACIONES = "Notificaciones"
 
 MAX_NOTIFICATIONS = 15  # Aumentado para mejor UX en CRM
 
-# Tipos de notificación mejorados para CRM
+# Cargar credenciales desde variable de entorno en Render
+def get_gspread_client():
+    """Devuelve un cliente autorizado de gspread"""
+    creds_json = os.environ.get("GOOGLE_SHEETS_CREDENTIALS")
+    if creds_json:
+        creds_dict = json.loads(creds_json)
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        return gspread.authorize(creds)
+
+    # Fallback para desarrollo local con secrets.toml
+    if "google_sheets" in st.secrets:
+        creds_dict = dict(st.secrets["google_sheets"])
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        return gspread.authorize(creds)
+
+    raise RuntimeError("No se encontraron credenciales de Google Sheets")
+
+# --------------------------
+# NOTIFICACIONES
+# --------------------------
 NOTIFICATION_TYPES = {
     "unassigned_claim": {"priority": "alta", "icon": "⏱️", "color": "#FF6B6B"},
     "status_change": {"priority": "media", "icon": "🔄", "color": "#4ECDC4"},
@@ -39,10 +71,9 @@ NOTIFICATION_TYPES = {
     "reclamo_asignado": {"priority": "media", "icon": "👷", "color": "#5F27CD"},
     "trabajo_asignado": {"priority": "media", "icon": "🛠️", "color": "#FF9FF3"},
     "cierre_exitoso": {"priority": "media", "icon": "✅", "color": "#10AC84"},
-    "alerta_urgente": {"priority": "critica", "icon": "🚨", "color": "#EE5A24"}
+    "alerta_urgente": {"priority": "critica", "icon": "🚨", "color": "#EE5A24"},
 }
 
-# Columnas para la hoja de notificaciones
 COLUMNAS_NOTIFICACIONES = [
     "ID", "Tipo", "Prioridad", "Mensaje", 
     "Usuario_Destino", "ID_Reclamo", "Fecha_Hora", "Leída", "Acción", "Color"
