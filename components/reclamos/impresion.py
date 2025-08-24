@@ -11,9 +11,8 @@ from utils.pdf_utils import agregar_pie_pdf
 from utils.date_utils import ahora_argentina
 from utils.reporte_diario import *
 
-# Añadir esta línea para definir DEBUG_MODE si no existe
-DEBUG_MODE = st.secrets.get("DEBUG_MODE", False) if hasattr(st, 'secrets') else False
-
+# IMPORTAR DEBUG_MODE DESDE SETTINGS - FORMA CORRECTA
+from config.settings import DEBUG_MODE
 
 def render_impresion_reclamos(df_reclamos, df_clientes, user):
     """
