@@ -18,7 +18,7 @@ def ahora_argentina() -> datetime:
 def parse_fecha(
     fecha_str: Union[str, float, pd.Timestamp, datetime, None], 
     dayfirst: bool = True
-) -> Union[datetime, pd.NaT]:
+) -> Optional[datetime]:
     """
     Convierte un string/objeto a datetime con zona horaria Argentina.
     Maneja múltiples formatos y casos especiales.
@@ -28,10 +28,10 @@ def parse_fecha(
         dayfirst: Si True, interpreta el primer número como día (default True para formato argentino)
     
     Returns:
-        datetime con zona horaria o pd.NaT si no se puede parsear
+        datetime con zona horaria o None si no se puede parsear
     """
     if pd.isna(fecha_str) or fecha_str in (None, "", "NaT", "nan", "NaN"):
-        return pd.NaT
+        return None
     
     # Si ya es un datetime con timezone, lo devolvemos tal cual
     if isinstance(fecha_str, datetime) and fecha_str.tzinfo is not None:
@@ -46,12 +46,12 @@ def parse_fecha(
         try:
             return fecha_str.to_pydatetime().astimezone(ARGENTINA_TZ)
         except:
-            return pd.NaT
+            return None
     
     # Convertimos a string y limpiamos
     fecha_str = str(fecha_str).strip()
     if not fecha_str or fecha_str.lower() in ['nan', 'nat', 'none', '']:
-        return pd.NaT
+        return None
     
     # Lista de formatos compatibles (ordenados por probabilidad de uso)
     formatos = [
@@ -92,7 +92,7 @@ def parse_fecha(
     except Exception:
         pass
     
-    return pd.NaT
+    return None
 
 def format_fecha(
     fecha: Union[datetime, pd.Timestamp, str, None], 
@@ -110,14 +110,14 @@ def format_fecha(
     Returns:
         String con la fecha formateada o default_text si no se puede formatear
     """
-    if pd.isna(fecha) or fecha is None:
+    if fecha is None or pd.isna(fecha):
         return default_text
     
     try:
         # Si es string, primero parsear
         if isinstance(fecha, str):
             fecha = parse_fecha(fecha)
-            if pd.isna(fecha):
+            if fecha is None:
                 return default_text
         
         # Convertir a datetime con zona horaria si es necesario
@@ -137,11 +137,11 @@ def format_fecha(
 
 def es_fecha_valida(fecha: Union[datetime, str, pd.Timestamp, None]) -> bool:
     """Verifica si una fecha es válida y puede ser parseada"""
-    if pd.isna(fecha) or fecha is None:
+    if fecha is None or pd.isna(fecha):
         return False
     try:
         parsed = parse_fecha(fecha)
-        return not pd.isna(parsed)
+        return parsed is not None
     except Exception:
         return False
 
@@ -165,7 +165,7 @@ def diferencia_fechas(
         dt1 = parse_fecha(fecha1)
         dt2 = parse_fecha(fecha2)
         
-        if pd.isna(dt1) or pd.isna(dt2):
+        if dt1 is None or dt2 is None:
             return None
             
         diff = dt2 - dt1 if dt2 > dt1 else dt1 - dt2
@@ -190,7 +190,7 @@ def fecha_para_cloud(fecha):
     """
     try:
         dt = parse_fecha(fecha)
-        if pd.isna(dt):
+        if dt is None:
             return None
         return dt.isoformat()
     except:
