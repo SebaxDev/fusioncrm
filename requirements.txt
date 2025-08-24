@@ -9,7 +9,6 @@ pytz==2022.7.1
 tenacity==8.1.0
 streamlit-lottie==0.0.3
 
-# Excel y Parquet (puedes dejarlos sin versión si no quieres errores de compatibilidad)
-pyarrow
-openpyxl
-xlrd
+# Excel y Parquet
+openpyxl==3.1.2
+xlrd==2.0.1
