@@ -199,3 +199,28 @@ def sanitize_for_sheets(value):
         value_str = value_str[:50000] + '...'
     
     return value_str
+
+# --- AGREGAR AQUÍ LA NUEVA FUNCIÓN ---
+def badge(text, color='secondary'):
+    """
+    Devuelve un badge de Streamlit con el texto y color especificados
+    Args:
+        text (str): Texto a mostrar en el badge
+        color (str): Color del badge ('primary', 'secondary', 'success', 'warning', 'danger', 'info')
+    Returns:
+        str: Código del badge en formato Streamlit
+    """
+    color_map = {
+        'primary': 'blue',
+        'secondary': 'gray',
+        'success': 'green', 
+        'warning': 'orange',
+        'danger': 'red',
+        'info': 'blue'
+    }
+    
+    # Mapear colores a los que Streamlit reconoce
+    streamlit_color = color_map.get(color, 'gray')
+    
+    # Usar el componente nativo de Streamlit para badges
+    return f":{streamlit_color}[{text}]"
