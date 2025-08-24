@@ -17,5 +17,7 @@ pytz==2023.3
 tenacity==8.2.2
 streamlit-lottie==0.0.3
 
-# Prevenir instalación de pyarrow
-pyarrow==0; python_version >= "3.0"
+# EXCLUIR pyarrow y otras dependencias pesadas
+--no-binary pyarrow
+--no-binary openpyxl
+--no-binary xlrd
